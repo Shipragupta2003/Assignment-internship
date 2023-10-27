@@ -1,0 +1,70 @@
+import requests
+from bs4 import BeautifulSoup
+
+url = "https://brainlox.com/courses/category/technical"
+response = requests.get(url)
+
+if response.status_code == 200:
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    course_list = []
+
+    courses = soup.find_all("div", class_="course-card")
+    for course in courses:
+        title = course.find("h3", class_="course-title").text
+        description = course.find("div", class_="course-description").text
+        url = course.find("a")["href"]
+        
+        course_data = {
+            "title": title,
+            "description": description,
+            "url": url
+        }
+        
+        course_list.append(course_data)
+    
+    # Now, course_list contains the scraped data
+else:
+    print("Failed to fetch the webpage")
+
+# Next, you can preprocess the data to make it suitable for chatbot training.
+# Here's an example of how you might clean and structure the data:
+
+cleaned_data = []
+for course in course_list:
+    # Remove leading/trailing whitespace and line breaks
+    title = course["title"].strip()
+    description = course["description"].strip()
+    url = course["url"]
+    
+    # Create a structured data dictionary
+    course_info = {
+        "title": title,
+        "description": description,
+        "url": url
+    }
+    
+    cleaned_data.append(course_info)
+
+# Now, `cleaned_data` contains the structured and cleaned course information suitable for chatbot training.
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
+
+model_name = "gpt2"  # Choose an appropriate model
+tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+model = GPT2LMHeadModel.from_pretrained(model_name)
+
+def generate_response(user_input):
+    # Process user input, understand their query.
+    # Use the recommendation engine to get course suggestions based on the query.
+
+    # Generate a response using the pre-trained model and course suggestions.
+    response = "Here are some courses you might be interested in:\n1. Course A\n2. Course B\n3. Course C"
+    return response
+
+# Run the chatbot loop to interact with users and provide recommendations.
+while True:
+    user_input = input("You: ")
+    if user_input.lower() == "exit":
+        break
+    response = generate_response(user_input)
+    print("Chatbot: " + response)
